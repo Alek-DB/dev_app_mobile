@@ -33,13 +33,16 @@ class ListeActivity : AppCompatActivity() {
         val isr = InputStreamReader(fis)
         val br = BufferedReader(isr)
 
-        var memo: String
+//        var memo: String
+//        do{
+//            memo = br.readLine()
+//            if (memo != null)
+//                memos.add(memo)
+//        } while(memo != null)
 
-        do{
-            memo = br.readLine()
-            if (memo != null)
-                memos.add(memo)
-        } while(memo != null)
+
+        br.forEachLine { s -> memos.add(s) }
+        br.close()
 
         var ar = ArrayAdapter(this, android.R.layout.simple_list_item_1, memos)
         liste.adapter = ar
