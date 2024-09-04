@@ -1,0 +1,27 @@
+		caractere	octet
+
+Lecture		reader		Inputstream
+
+ecriture	writer		Outputstream
+
+
+
+POUR READ UN TEXTE FILE
+        val fis : FileInputStream = openFileInput("memos.txt")
+        val isr = InputStreamReader(fis)
+        val br = BufferedReader(isr)
+
+
+
+POUR WRITE DANS UN TEXTE FILE
+		var toSave: String = champ.text.toString()
+
+                val fos : FileOutputStream = openFileOutput("memos.txt", MODE_APPEND)
+                // append pour ajouter a la fin du fichier et pas ecraser
+                val osw = OutputStreamWriter(fos)
+                // val osw : OutputStreamWriter = OutputStreamWriter(fos)
+                val bw = BufferedWriter(osw)
+
+                bw.write(toSave)
+                bw.newLine()
+                bw.close()
