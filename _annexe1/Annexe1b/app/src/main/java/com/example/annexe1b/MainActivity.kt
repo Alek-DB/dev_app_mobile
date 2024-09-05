@@ -13,6 +13,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.util.Scanner
+import java.util.Vector
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,16 +27,47 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val ligne = nbLigne()
-        val character = nbChar()
-        val nombreC = nbC()
+        //val ligne = nbLigne()
+        //val character = nbChar()
+        //val nombreC = nbC()
         //ecrire()
 
 
-        println(ligne)
-        println(character)
-        println(nombreC)
+        //println(ligne)
+        //println(character)
+        //println(nombreC)
+        System.out.println("lalo")
+        var planetes = trouver_planetes()
+
+        System.out.println(planetes.count())
+
+        for (planete in planetes) {
+            System.out.println(planete.name)
+        }
+
+
     }
+
+    fun trouver_planetes(): Vector<Planete>{
+
+        val planetes = Vector<Planete>()
+
+        val fis : FileInputStream = openFileInput("planete.txt")
+        fis.use {
+            val s = Scanner(fis)
+            s.use {
+                while (s.hasNext()){
+                    val nom = s.next()
+                    val satellite = s.next().toInt()
+
+                    planetes.add(Planete(nom,satellite))
+                }
+            }
+        }
+
+        return planetes
+    }
+
 
     fun nbLigne(): Int {
         val fis : FileInputStream = openFileInput("fichier.txt")
@@ -116,4 +149,9 @@ class MainActivity : AppCompatActivity() {
         bw.newLine()
         bw.close()
     }
+}
+
+
+public class Planete(var name:String, var satellite: Int){
+
 }
