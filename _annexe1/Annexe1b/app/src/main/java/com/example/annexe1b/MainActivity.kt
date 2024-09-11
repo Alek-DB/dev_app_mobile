@@ -149,9 +149,12 @@ class MainActivity : AppCompatActivity() {
         bw.newLine()
         bw.close()
     }
+
 }
 
 
 public class Planete(var name:String, var satellite: Int){
-
+    //on peut initialiser des variable ici
+    // init{} pour initialiser si on veut faire qqchose sur les variables
+    // constructor secondaire
 }
