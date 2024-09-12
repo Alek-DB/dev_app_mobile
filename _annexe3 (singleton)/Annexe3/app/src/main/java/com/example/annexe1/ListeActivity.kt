@@ -8,9 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.io.BufferedReader
-import java.io.FileInputStream
-import java.io.InputStreamReader
+import java.util.ArrayList
 import java.util.Vector
 
 class ListeActivity : AppCompatActivity() {
@@ -34,8 +32,11 @@ class ListeActivity : AppCompatActivity() {
     }
 
     fun convertir():Vector<String>{
+
+        SingletonMemo.getInstance(applicationContext).deserialiser();
+
         var listeTexteMemo = Vector<String>()
-        var listeMemo = Singleton.getInstance()._memo
+        var listeMemo = SingletonMemo.getInstance(applicationContext)._memo
 
         for(memo in listeMemo){
             listeTexteMemo.add(memo.texte)

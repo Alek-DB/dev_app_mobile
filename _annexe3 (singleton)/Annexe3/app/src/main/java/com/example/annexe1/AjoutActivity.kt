@@ -43,6 +43,17 @@ class AjoutActivity : AppCompatActivity() {
         date_btn.setOnClickListener(ec)
     }
 
+    override fun onStop() {
+        super.onStop()
+        //on veut serialiser la liste de memo dans un fichier pour le recuperer quand on va revenir dans l'app
+        try{
+            SingletonMemo.getInstance(applicationContext).serialiserListe()
+        }
+        catch (e:Exception){
+            e.printStackTrace()
+        }
+    }
+
     inner class Ecouteur : View.OnClickListener, OnDateSetListener{
         override fun onClick(v: View) {
             if(v == date_btn){
@@ -56,7 +67,7 @@ class AjoutActivity : AppCompatActivity() {
             else if(v == ajout){
                 var toSave: String = champ.text.toString()
 
-                Singleton.getInstance().ajouter_memo(Memo(toSave, dateChoisi))
+                SingletonMemo.getInstance(this@AjoutActivity).ajouter_memo(Memo(toSave, dateChoisi))
 
                 finish();
             }
