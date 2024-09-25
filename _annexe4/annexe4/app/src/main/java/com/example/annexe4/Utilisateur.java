@@ -1,6 +1,8 @@
 package com.example.annexe4;
 
-public class Utilisateur {
+import java.io.Serializable;
+
+public class Utilisateur implements Serializable {
 
     public String prenom;
     public String nom;
