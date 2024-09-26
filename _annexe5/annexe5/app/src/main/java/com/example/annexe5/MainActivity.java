@@ -3,6 +3,7 @@ package com.example.annexe5;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -17,11 +18,12 @@ import androidx.core.view.WindowInsetsCompat;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,28 +54,18 @@ public class MainActivity extends AppCompatActivity {
         int[] to = {R.id.nom, R.id.artiste, R.id.textView3, R.id.imageView};
 
         // Créer un SimpleAdapter personnalisé
-        SimpleAdapter adapter = new SimpleAdapter(this, data, R.layout.liste_item, from, to) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-
-                // Récupérer les éléments pour personnaliser l'item
-                TextView nomView = view.findViewById(R.id.nom);
-                TextView artisteView = view.findViewById(R.id.artiste);
-                TextView infoView = view.findViewById(R.id.textView3);
-                ImageView imageView = view.findViewById(R.id.imageView);
-
-                // Personnaliser l'affichage
-                Map<String, Object> currentItem = data.get(position);
-                nomView.setText((String) currentItem.get("nom"));
-                artisteView.setText((String) currentItem.get("artiste"));
-                infoView.setText((String) currentItem.get("info"));
-                imageView.setImageResource((Integer) currentItem.get("image")); // Assurez-vous que l'image existe
-
-                return view;
-            }
-        };
+        SimpleAdapter adapter = new SimpleAdapter(this, data, R.layout.liste_item, from, to);
 
         listView.setAdapter(adapter);
+
+    }
+
+
+    class Ecouteur implements AdapterView.OnItemClickListener{
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        }
     }
 }
