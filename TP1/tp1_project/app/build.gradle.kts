@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.atelier2"
+    namespace = "com.example.tp1"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.atelier2"
+        applicationId = "com.example.tp1"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -34,8 +34,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation (libs.media3.exoplayer)
+    implementation (libs.media3.ui)
+    implementation (libs.media3.common)
+    implementation (libs.gson)
     implementation(libs.volley)
-    implementation ("com.google.code.gson:gson:2.11.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
