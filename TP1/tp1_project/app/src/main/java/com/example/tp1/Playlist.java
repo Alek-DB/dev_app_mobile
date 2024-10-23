@@ -1,7 +1,11 @@
 package com.example.tp1;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Playlist {
-    Vector<Track> music;
+    ArrayList<Track> music;
+
+    public void setMusic(ArrayList<Track> music) {
+        this.music = music;
+    }
 }

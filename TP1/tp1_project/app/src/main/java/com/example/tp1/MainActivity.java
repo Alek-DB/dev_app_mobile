@@ -1,47 +1,35 @@
 package com.example.tp1;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.Player;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.ui.PlayerView;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.Hashtable;
+import java.util.Vector;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ObservateurChangement {
 
-    private Playlist playlist;
 
-    private ExoPlayer exoP;
-    private PlayerView vue;
+    Playlist playlist;
+    Sujet modele;
 
-    private Button back;
-    private Button back_seconds;
-    private Button pause;
-    private Button forward_seconds;
-    private Button forward;
 
-    private int song_index = 0;
-    private long song_position = 0;
 
+    Vector<Hashtable<String, Object>> vector = new Vector<>();
+    ListView l;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,131 +42,79 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-
-        back = findViewById(R.id.back);
-        back_seconds = findViewById(R.id.back_seconds);
-        pause = findViewById(R.id.pause);
-        forward_seconds = findViewById(R.id.forward_seconds);
-        forward = findViewById(R.id.forward);
-
-
-        back.setOnClickListener(v -> {
-            if(song_index != 0) play_song(--song_index, 0);
-        });
-        back_seconds.setOnClickListener(v -> {
-            exoP.seekTo(exoP.getCurrentPosition() - 10000);
-        });
-        pause.setOnClickListener(v -> {
-            if(exoP.isPlaying())exoP.pause();
-            else exoP.play();
-        });
-        forward_seconds.setOnClickListener(v -> {
-            exoP.seekTo(exoP.getCurrentPosition() + 10000);
-        });
-        forward.setOnClickListener(v -> {
-            if(song_index != playlist.music.size()-1) play_song(++song_index, 0);
-            System.out.println("hell");
-            System.out.println(playlist.music.size());
-        });
-
-
-
-        exoP = new ExoPlayer.Builder(this).build();
-        exoP.addListener(new Player.Listener() {
-            @Override
-            public void onPlaybackStateChanged(int state) {
-                if (state == Player.STATE_ENDED) {
-                    if (exoP.hasNextMediaItem()) {
-                        exoP.seekToNextMediaItem();
-                        exoP.play();
-                    } else {
-
-                        System.out.println("Fin de la playlist.");
-                    }
-                }
-            }
-        });
-
-
-        vue = findViewById(R.id.playerView);
-        vue.setPlayer(exoP);
-        vue.setUseController(false);
-
-        get_songs();
-    }
-
-
-    private void play_song(int which, long where){
-        exoP.seekTo(which, where);
-        exoP.play();
-    }
-
-    private void get_songs(){
-        RequestQueue rq = Volley.newRequestQueue(this);
-        String url = "https://api.jsonbin.io/v3/b/661ab8b1acd3cb34a837f284?meta=false";
-        StringRequest sr = new StringRequest(url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Gson gson = new Gson();
-                playlist = gson.fromJson(response, Playlist.class) ;
-
-                try {
-                    FileInputStream fis = openFileInput("fichier.ser");
-                    ObjectInputStream ois = new ObjectInputStream(fis);
-
-                    song_index = ois.read();
-                    song_position = ois.readLong();
-
-                    ois.close();
-                    fis.close();
-                } catch (IOException ignored) {
-                    System.out.println("crashed in get_songs");
-                }
-
-                System.out.println("got songs");
-
-                for(Track m: playlist.music){
-                    exoP.addMediaItem(MediaItem.fromUri(m.getSource()));
-                }
-
-                exoP.prepare();
-
-                play_song(song_index, song_position);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("Crashed");
-            }
-        });
-        rq.add(sr);
     }
 
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onStart() {
+        super.onStart();            //créer le modele, donc va chercher la playlist
+        modele = new Modele(this);
+        modele.ajouterObservateur(this); // on ajouter l'observateur ( l'activité ) au modèle ( le sujet )
+    }
 
-        exoP.pause();
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        modele.enleverObservateur(this);
+    }
+
+    @Override
+    public void changement(Playlist p) {
+
+        playlist = p;
+
+        int song_index = 0;
+        long song_position = 0;
+
+        //voir si j'ai sauvegarder qqpart
         try {
-            FileOutputStream fos = openFileOutput("fichier.ser", MODE_PRIVATE);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            FileInputStream fis = openFileInput("fichier.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
 
-            oos.write(song_index);
-            System.out.println("pos" + exoP.getCurrentPosition());
-            oos.writeLong(exoP.getCurrentPosition());
+            song_index = ois.read();
+            song_position = ois.readLong();
 
-            oos.close();
-            fos.close();
+            ois.close();
+            fis.close();
         } catch (IOException ignored) {
-            System.out.println("crashed in onStop");
+            System.out.println("crashed in get_songs");
         }
-    }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
+        if(song_position != 0 || song_index !=0){   //si j'ai sauvegardé, va a la toune
+            Intent intent = new Intent(getApplicationContext(),songActivity.class);
+            intent.putExtra("index", song_index);
+            intent.putExtra("time", song_position);
+            intent.putExtra("playlist", playlist.music);
+            startActivity(intent);
+        }
+        else{       //sinon montre la liste view
 
-        play_song(song_index, song_position);
+            l = findViewById(R.id.listview);
+            for(Track m: playlist.music){
+                Hashtable<String, Object> temp = new Hashtable<>();
+                temp.put("position", m.getArtist());
+                temp.put("nom", m.getTitle());
+                temp.put("date", m.getDuration());
+                temp.put("image", m.getImage());
+                vector.add(temp);
+            }
+
+
+            SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"position", "nom", "date", "image"}, new int[]{R.id.textView, R.id.textNom, R.id.textView3, R.id.imageView2}){
+                @Override
+                public void setViewImage(ImageView v, int value) {
+                    super.setViewImage(v, value);
+                }
+            };
+            l.setAdapter(adapter);
+            l.setOnItemClickListener((parent, view, position, id) -> {
+                Intent intent = new Intent(getApplicationContext(),songActivity.class);
+                intent.putExtra("index", position);
+                intent.putExtra("playlist", playlist.music);
+                startActivity(intent);
+            });
+        }
+
     }
 }

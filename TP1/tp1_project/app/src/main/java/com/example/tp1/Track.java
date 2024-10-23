@@ -1,6 +1,8 @@
 package com.example.tp1;
 
-public class Track {
+import java.io.Serializable;
+
+public class Track implements Serializable {
     private String id;
     private String title;
     private String album;
