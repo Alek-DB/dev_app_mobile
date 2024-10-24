@@ -14,6 +14,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 
+import com.bumptech.glide.Glide;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
 
 
     Vector<Hashtable<String, Object>> vector = new Vector<>();
-    ListView l;
+    ListView liste;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +43,13 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();            //créer le modele, donc va chercher la playlist
-        modele = new Modele(this);
+        modele = Modele.getInstance(this);
         modele.ajouterObservateur(this); // on ajouter l'observateur ( l'activité ) au modèle ( le sujet )
     }
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         long song_position = 0;
 
         //voir si j'ai sauvegarder qqpart
+        System.out.println("First page");
         try {
             FileInputStream fis = openFileInput("fichier.ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
@@ -78,43 +80,44 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             ois.close();
             fis.close();
         } catch (IOException ignored) {
-            System.out.println("crashed in get_songs");
+            System.out.println("crashed in fichier ");
         }
+
+        System.out.println(song_index);
 
         if(song_position != 0 || song_index !=0){   //si j'ai sauvegardé, va a la toune
-            Intent intent = new Intent(getApplicationContext(),songActivity.class);
-            intent.putExtra("index", song_index);
-            intent.putExtra("time", song_position);
-            intent.putExtra("playlist", playlist.music);
-            startActivity(intent);
+            go_to(song_index,song_position);
         }
         else{       //sinon montre la liste view
-
-            l = findViewById(R.id.listview);
             for(Track m: playlist.music){
                 Hashtable<String, Object> temp = new Hashtable<>();
-                temp.put("position", m.getArtist());
-                temp.put("nom", m.getTitle());
-                temp.put("date", m.getDuration());
+                temp.put("title", m.getTitle());
+                temp.put("artist", m.getArtist());
+                temp.put("album", m.getAlbum());
                 temp.put("image", m.getImage());
                 vector.add(temp);
             }
 
-
-            SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"position", "nom", "date", "image"}, new int[]{R.id.textView, R.id.textNom, R.id.textView3, R.id.imageView2}){
+            SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"title", "artist", "album", "image"}, new int[]{R.id.textNom, R.id.textView, R.id.textView3, R.id.imageView2}){
                 @Override
-                public void setViewImage(ImageView v, int value) {
-                    super.setViewImage(v, value);
+                public void setViewImage(ImageView v, String value) {
+                    Glide.with(getApplicationContext()).load( value ).into( v );
                 }
             };
-            l.setAdapter(adapter);
-            l.setOnItemClickListener((parent, view, position, id) -> {
-                Intent intent = new Intent(getApplicationContext(),songActivity.class);
-                intent.putExtra("index", position);
-                intent.putExtra("playlist", playlist.music);
-                startActivity(intent);
+            liste = findViewById(R.id.listview);
+            liste.setAdapter(adapter);
+            liste.setOnItemClickListener((parent, view, position, id) -> {
+                go_to(position,0);
             });
         }
 
+    }
+
+    private void go_to(int index, long position){
+        Intent intent = new Intent(getApplicationContext(),songActivity.class);
+        intent.putExtra("index", index);
+        intent.putExtra("time", position);
+        intent.putExtra("playlist", playlist.music);
+        startActivity(intent);
     }
 }

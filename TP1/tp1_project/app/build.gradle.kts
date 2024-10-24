@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tp1"
-        minSdk = 26
+        minSdk = 27
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -28,17 +28,20 @@ android {
     }
 }
 
+
+
 dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation (libs.media3.exoplayer)
-    implementation (libs.media3.ui)
-    implementation (libs.media3.common)
-    implementation (libs.gson)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.common)
+    implementation(libs.gson)
     implementation(libs.volley)
+    implementation("com.github.bumptech.glide:glide:4.15.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -14,6 +14,14 @@ public class Modele implements Sujet {
 
     private ObservateurChangement obs;
     private Playlist playlist;
+    private static Modele instance;
+
+    public static Modele getInstance(Context ctx){
+        if(instance == null){
+            instance = new Modele(ctx);
+        }
+        return instance;
+    }
 
 
     public Modele(Context context) {    //va chercher la playlist
@@ -47,7 +55,6 @@ public class Modele implements Sujet {
     public void enleverObservateur(ObservateurChangement obs) {
         obs = null;
     }
-
     @Override
     public void avertirObservateurs() {
         obs.changement(playlist);

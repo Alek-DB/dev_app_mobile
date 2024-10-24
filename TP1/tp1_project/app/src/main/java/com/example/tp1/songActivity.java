@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -37,16 +39,18 @@ public class songActivity extends AppCompatActivity {
     private ExoPlayer exoP;
     private PlayerView vue;
 
-    private Button back;
-    private Button back_seconds;
-    private Button pause;
-    private Button forward_seconds;
-    private Button forward;
+    private ImageButton back;
+    private ImageButton back_seconds;
+    private ImageButton pause;
+    private ImageButton forward_seconds;
+    private ImageButton forward;
 
     private Button back_btn;
 
     private int song_index = 0;
     private long song_position = 0;
+
+    private boolean quitting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,16 +84,20 @@ public class songActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        exoP = new ExoPlayer.Builder(this).build();
+
         back = findViewById(R.id.back);
         back_seconds = findViewById(R.id.back_seconds);
         pause = findViewById(R.id.pause);
         forward_seconds = findViewById(R.id.forward_seconds);
         forward = findViewById(R.id.forward);
 
-
         back_btn = findViewById(R.id.back_btn);
         back_btn.setOnClickListener(v -> {
             deleteFile("fichier.ser");
+            song_index = 0;
+            song_position = 0;
+            quitting = true;
             finish();
         });
 
@@ -100,8 +108,15 @@ public class songActivity extends AppCompatActivity {
             exoP.seekTo(exoP.getCurrentPosition() - 10000);
         });
         pause.setOnClickListener(v -> {
-            if(exoP.isPlaying())exoP.pause();
-            else exoP.play();
+            if(exoP.isPlaying()){
+                exoP.pause();
+                pause.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.play));
+            }
+            else {
+                exoP.play();
+                pause.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.pause));
+            }
+
         });
         forward_seconds.setOnClickListener(v -> {
             exoP.seekTo(exoP.getCurrentPosition() + 10000);
@@ -110,9 +125,6 @@ public class songActivity extends AppCompatActivity {
             if(song_index != playlist.music.size()-1)exoP.seekToNextMediaItem();
         });
 
-
-
-        exoP = new ExoPlayer.Builder(this).build();
 
 
         Handler handler = new Handler();
@@ -126,7 +138,6 @@ public class songActivity extends AppCompatActivity {
                     seekB.setProgress(currentPosition * 100 / duration);
 
                     time_stamp.setText(formatTime(currentPosition) + " / " + formatTime(duration));
-                    System.out.println(currentPosition);
                 }
                 handler.postDelayed(this, 1000);
             }
@@ -170,6 +181,7 @@ public class songActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        quitting = false;
 
         Intent intent = getIntent();
         song_index = intent.getIntExtra("index",0);
@@ -196,20 +208,24 @@ public class songActivity extends AppCompatActivity {
 
 
 
-
-
     @Override
     protected void onStop() {
         super.onStop();
 
-        System.out.println("save");
         try {
             FileOutputStream fos = openFileOutput("fichier.ser", MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-            oos.write(song_index);
-            System.out.println("pos" + exoP.getCurrentPosition());
-            oos.writeLong(exoP.getCurrentPosition());
+            if(quitting){
+                oos.write(0);
+                oos.writeLong(0);
+                System.out.println("delete save");
+            }
+            else{
+                oos.write(exoP.getCurrentMediaItemIndex());
+                oos.writeLong(exoP.getCurrentPosition());
+                System.out.println("save");
+            }
 
             oos.close();
             fos.close();
@@ -224,14 +240,16 @@ public class songActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        song_index = exoP.getCurrentMediaItemIndex();
-        song_position = exoP.getCurrentPosition();
+        if(!quitting){
+            song_index = exoP.getCurrentMediaItemIndex();
+            song_position = exoP.getCurrentPosition();
+        }
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-
+        System.out.println("restart");
         exoP.seekTo(song_index, song_position);
         exoP.play();
     }
