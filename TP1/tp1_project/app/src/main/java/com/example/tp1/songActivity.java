@@ -30,27 +30,14 @@ public class songActivity extends AppCompatActivity {
 
 
     private Playlist playlist;
-    private TextView nom_artiste;
-    private TextView nom_music;
-    private TextView time_stamp;
-
+    private TextView nom_artiste, nom_music, time_stamp;
     private SeekBar seekB;
-
     private ExoPlayer exoP;
-    private PlayerView vue;
-
-    private ImageButton back;
-    private ImageButton back_seconds;
-    private ImageButton pause;
-    private ImageButton forward_seconds;
-    private ImageButton forward;
-
-    private Button back_btn;
-
     private int song_index = 0;
     private long song_position = 0;
 
     private boolean quitting = false;
+    private boolean restarting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,18 +73,20 @@ public class songActivity extends AppCompatActivity {
 
         exoP = new ExoPlayer.Builder(this).build();
 
-        back = findViewById(R.id.back);
-        back_seconds = findViewById(R.id.back_seconds);
-        pause = findViewById(R.id.pause);
-        forward_seconds = findViewById(R.id.forward_seconds);
-        forward = findViewById(R.id.forward);
+        ImageButton back = findViewById(R.id.back);
+        ImageButton back_seconds = findViewById(R.id.back_seconds);
+        ImageButton pause = findViewById(R.id.pause);
+        ImageButton forward_seconds = findViewById(R.id.forward_seconds);
+        ImageButton forward = findViewById(R.id.forward);
 
-        back_btn = findViewById(R.id.back_btn);
+        Button back_btn = findViewById(R.id.back_btn);
         back_btn.setOnClickListener(v -> {
             deleteFile("fichier.ser");
             song_index = 0;
             song_position = 0;
             quitting = true;
+
+            setResult(RESULT_OK);
             finish();
         });
 
@@ -172,10 +161,20 @@ public class songActivity extends AppCompatActivity {
             }
         });
 
-        vue = findViewById(R.id.playerView);
+        PlayerView vue = findViewById(R.id.playerView);
         vue.setPlayer(exoP);
         vue.setUseController(false);
 
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        System.out.println("restart");
+
+        restarting = true;
+        exoP.seekTo(song_index, song_position);
+        exoP.play();
     }
 
     @Override
@@ -183,6 +182,12 @@ public class songActivity extends AppCompatActivity {
         super.onStart();
         quitting = false;
 
+        if(restarting){
+            restarting = false;
+            return;
+        }
+
+        System.out.println("start");
         Intent intent = getIntent();
         song_index = intent.getIntExtra("index",0);
         song_position = intent.getLongExtra("time",0);
@@ -240,17 +245,10 @@ public class songActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        System.out.println("pause");
         if(!quitting){
             song_index = exoP.getCurrentMediaItemIndex();
             song_position = exoP.getCurrentPosition();
         }
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        System.out.println("restart");
-        exoP.seekTo(song_index, song_position);
-        exoP.play();
     }
 }
