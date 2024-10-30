@@ -38,6 +38,7 @@ public class songActivity extends AppCompatActivity {
 
     private boolean quitting = false;
     private boolean restarting = false;
+    private boolean replay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,14 +80,14 @@ public class songActivity extends AppCompatActivity {
         ImageButton forward_seconds = findViewById(R.id.forward_seconds);
         ImageButton forward = findViewById(R.id.forward);
 
-        Button back_btn = findViewById(R.id.back_btn);
+        ImageButton back_btn = findViewById(R.id.back_btn);
         back_btn.setOnClickListener(v -> {
             deleteFile("fichier.ser");
             song_index = 0;
             song_position = 0;
             quitting = true;
 
-            setResult(RESULT_OK);
+//            setResult(RESULT_OK);
             finish();
         });
 
@@ -144,10 +145,11 @@ public class songActivity extends AppCompatActivity {
                     if (exoP.hasNextMediaItem()) {
                         exoP.seekToNextMediaItem();
                         exoP.play();
-                    } else {
+                    } else if(replay){
                         exoP.seekTo(0,0);
                         System.out.println("Fin de la playlist.");
                     }
+
                 }
             }
 
@@ -193,6 +195,7 @@ public class songActivity extends AppCompatActivity {
         song_position = intent.getLongExtra("time",0);
         playlist = new Playlist();
         playlist.setMusic((ArrayList<Track>) intent.getSerializableExtra("playlist"));
+        replay = intent.getBooleanExtra("replay", false);
 
 
         for(Track m: playlist.music){
@@ -200,7 +203,6 @@ public class songActivity extends AppCompatActivity {
         }
 
         exoP.prepare();
-
         exoP.seekTo(song_index, song_position);
         exoP.play();
     }

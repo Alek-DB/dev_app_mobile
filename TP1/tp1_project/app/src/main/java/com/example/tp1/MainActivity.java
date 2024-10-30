@@ -2,6 +2,7 @@ package com.example.tp1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -21,10 +22,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import javax.xml.transform.Result;
 
 public class MainActivity extends AppCompatActivity implements ObservateurChangement {
 
@@ -32,11 +34,10 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
     private Playlist playlist;
     private Sujet modele;
 
-
-
     private Vector<Hashtable<String, Object>> vector = new Vector<>();
     private ListView liste;
     private ActivityResultLauncher<Intent> lanceur;
+    private boolean replay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,13 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         });
 
         lanceur = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new CallBackInfo());
+
+        ImageButton settings = findViewById(R.id.settings);
+        settings.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(),Settings.class);
+            intent.putExtra("replay", replay);
+            lanceur.launch(intent);
+        });
     }
 
 
@@ -60,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         modele.ajouterObservateur(this); // on ajouter l'observateur ( l'activité ) au modèle ( le sujet )
         System.out.println("starting main");
     }
-
 
     @Override
     protected void onDestroy() {
@@ -76,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         int song_index = 0;
         long song_position = 0;
 
-        System.out.println("First page");
-
         //voir si j'ai sauvegarder qqpart
         try {
             FileInputStream fis = openFileInput("fichier.ser");
@@ -89,16 +94,13 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             ois.close();
             fis.close();
         } catch (Exception ignored) {
-            System.out.println("crashed in fichier ");
+            ignored.printStackTrace();
         }
+        set_adaptater();
 
-        System.out.println(song_index);
 
         if(song_position != 0 || song_index !=0){   //si j'ai sauvegardé, va a la toune
             go_to(song_index,song_position);
-        }
-        else{       //sinon montre la liste view
-            set_adaptater();
         }
 
     }
@@ -109,8 +111,8 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         intent.putExtra("index", index);
         intent.putExtra("time", position);
         intent.putExtra("playlist", playlist.music);
-
-        lanceur.launch(intent);
+        intent.putExtra("replay", replay);
+        startActivity(intent);
     }
 
     public class CallBackInfo implements ActivityResultCallback<ActivityResult> {
@@ -118,14 +120,15 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == RESULT_OK) {
-                System.out.println("came back");
-                set_adaptater();
+                Intent data = result.getData();
+                if (data != null) {
+                    replay = data.getBooleanExtra("replay", false); // Récupérer la donnée
+                }
             }
         }
     }
 
     private void set_adaptater(){
-        System.out.println("setting aaptater");
 
         for(Track m: playlist.music){
             Hashtable<String, Object> temp = new Hashtable<>();
@@ -136,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             vector.add(temp);
         }
 
-        SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"title", "artist", "album", "image"}, new int[]{R.id.textNom, R.id.textView, R.id.textView3, R.id.imageView2}){
+        SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"artist", "title", "album", "image"}, new int[]{R.id.artist, R.id.nom, R.id.album, R.id.imageView2}){
             @Override
             public void setViewImage(ImageView v, String value) {
                 Glide.with(getApplicationContext()).load( value ).into( v );
@@ -144,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         };
         liste = findViewById(R.id.listview);
         liste.setAdapter(adapter);
+        liste.setDivider(null);
+        liste.setDividerHeight(0);
         liste.setOnItemClickListener((parent, view, position, id) -> {
             go_to(position,0);
         });
