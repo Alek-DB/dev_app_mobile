@@ -51,53 +51,43 @@ public class songActivity extends AppCompatActivity {
             return insets;
         });
 
-
         nom_artiste = findViewById(R.id.nom_artiste);
         nom_music = findViewById(R.id.nom_music);
         seekB = findViewById(R.id.seekBar);
         time_stamp = findViewById(R.id.time_stamp);
+        exoP = new ExoPlayer.Builder(this).build();
 
         seekB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {    //l'utilisateur peux bouger la seekbar pour avancer ou reculer la musique
                 if (fromUser) {
-                    long newPosition = (long) (progress * exoP.getDuration() / 100);
+                    long newPosition = (progress * exoP.getDuration() / 100);
                     exoP.seekTo(newPosition);
                 }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
-
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        exoP = new ExoPlayer.Builder(this).build();
-
-        ImageButton back = findViewById(R.id.back);
-        ImageButton back_seconds = findViewById(R.id.back_seconds);
-        ImageButton pause = findViewById(R.id.pause);
-        ImageButton forward_seconds = findViewById(R.id.forward_seconds);
-        ImageButton forward = findViewById(R.id.forward);
-
         ImageButton back_btn = findViewById(R.id.back_btn);
         back_btn.setOnClickListener(v -> {
-            deleteFile("fichier.ser");
             song_index = 0;
             song_position = 0;
             quitting = true;
-
-//            setResult(RESULT_OK);
             finish();
         });
 
-        back.setOnClickListener(v -> {
-            if(song_index != 0) exoP.seekToPreviousMediaItem();
+        findViewById(R.id.back).setOnClickListener(v -> {
+            if(exoP.getCurrentMediaItemIndex() != 0) exoP.seekToPreviousMediaItem();      //si on est pas au debut, on peut reculer
+            else if(replay) exoP.seekTo(playlist.music.size()-1,0);                       //sinon juste si replay
         });
-        back_seconds.setOnClickListener(v -> {
+        findViewById(R.id.back_seconds).setOnClickListener(v -> {   //reculer de 10secondes
             exoP.seekTo(exoP.getCurrentPosition() - 10000);
         });
-        pause.setOnClickListener(v -> {
+        ImageButton pause = findViewById(R.id.pause);
+        pause.setOnClickListener(v -> {         //changer l'image du button selon le state
             if(exoP.isPlaying()){
                 exoP.pause();
                 pause.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.play));
@@ -108,14 +98,13 @@ public class songActivity extends AppCompatActivity {
             }
 
         });
-        forward_seconds.setOnClickListener(v -> {
+        findViewById(R.id.forward_seconds).setOnClickListener(v -> {    //avancer de 10secondes
             exoP.seekTo(exoP.getCurrentPosition() + 10000);
         });
-        forward.setOnClickListener(v -> {
-            if(song_index != playlist.music.size()-1)exoP.seekToNextMediaItem();
+        findViewById(R.id.forward).setOnClickListener(v -> {        //si on est pas a la fin on avance, sinon juste si on est en mode replay
+            if(exoP.getCurrentMediaItemIndex() != playlist.music.size()-1) exoP.seekToNextMediaItem();
+            else if(replay) exoP.seekTo(0,0);
         });
-
-
 
         Handler handler = new Handler();
         Runnable updateSeekBar = new Runnable() {
@@ -125,7 +114,7 @@ public class songActivity extends AppCompatActivity {
                     int currentPosition = (int) exoP.getCurrentPosition();
                     int duration = (int) exoP.getDuration();
 
-                    seekB.setProgress(currentPosition * 100 / duration);
+                    seekB.setProgress(currentPosition * 100 / duration);    //place la seekbar selon le temps passé
 
                     time_stamp.setText(formatTime(currentPosition) + " / " + formatTime(duration));
                 }
@@ -136,28 +125,24 @@ public class songActivity extends AppCompatActivity {
         exoP.addListener(new Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int state) {
-                if (state == Player.STATE_READY && exoP.getPlayWhenReady()) {
+                if (state == Player.STATE_READY && exoP.getPlayWhenReady()) {   //si la musique est prete a jouer, pars le seekbar
                     handler.post(updateSeekBar);
                 } else {
                     handler.removeCallbacks(updateSeekBar);
                 }
-                if (state == Player.STATE_ENDED) {
+                if (state == Player.STATE_ENDED) {  //si la musique est fini, passe à la prochaine
                     if (exoP.hasNextMediaItem()) {
                         exoP.seekToNextMediaItem();
                         exoP.play();
-                    } else if(replay){
+                    } else if(replay)  //continue apres la derniere juste si en mode replay
                         exoP.seekTo(0,0);
-                        System.out.println("Fin de la playlist.");
-                    }
-
                 }
             }
 
             @Override
             public void onTracksChanged(Tracks tracks) {
                 Player.Listener.super.onTracksChanged(tracks);
-
-                nom_artiste.setText(playlist.music.get(exoP.getCurrentMediaItemIndex()).getArtist());
+                nom_artiste.setText(playlist.music.get(exoP.getCurrentMediaItemIndex()).getArtist());   //change le texte selon la musique
                 nom_music.setText(playlist.music.get(exoP.getCurrentMediaItemIndex()).getTitle());
 
             }
@@ -166,16 +151,19 @@ public class songActivity extends AppCompatActivity {
         PlayerView vue = findViewById(R.id.playerView);
         vue.setPlayer(exoP);
         vue.setUseController(false);
+    }
 
+    private String formatTime(int milliseconds) {   //fonction pour formatter le temps de la seekbar
+        int seconds = (milliseconds / 1000) % 60;
+        int minutes = (milliseconds / (1000 * 60)) % 60;
+        return String.format("%d:%02d", minutes, seconds);
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        System.out.println("restart");
-
-        restarting = true;
-        exoP.seekTo(song_index, song_position);
+        restarting = true;  //pour pas refaire le onStart si on restart
+        exoP.seekTo(song_index, song_position); //variables sauvegardé dans le onPause
         exoP.play();
     }
 
@@ -185,11 +173,11 @@ public class songActivity extends AppCompatActivity {
         quitting = false;
 
         if(restarting){
+            exoP = new ExoPlayer.Builder(this).build();
             restarting = false;
             return;
         }
 
-        System.out.println("start");
         Intent intent = getIntent();
         song_index = intent.getIntExtra("index",0);
         song_position = intent.getLongExtra("time",0);
@@ -198,57 +186,47 @@ public class songActivity extends AppCompatActivity {
         replay = intent.getBooleanExtra("replay", false);
 
 
-        for(Track m: playlist.music){
+        //mets toutes les musiques de la playlist dans le exoPlayer
+        for(Track m: playlist.music)
             exoP.addMediaItem(MediaItem.fromUri(m.getSource()));
-        }
 
         exoP.prepare();
         exoP.seekTo(song_index, song_position);
         exoP.play();
     }
 
-    private String formatTime(int milliseconds) {
-        int seconds = (milliseconds / 1000) % 60;
-        int minutes = (milliseconds / (1000 * 60)) % 60;
-        return String.format("%d:%02d", minutes, seconds);
-    }
-
-
-
     @Override
     protected void onStop() {
         super.onStop();
 
-        try {
-            FileOutputStream fos = openFileOutput("fichier.ser", MODE_PRIVATE);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+        if(quitting)
+            deleteFile("fichier.ser");
+        else{
+            try {
+                FileOutputStream fos = openFileOutput("fichier.ser", MODE_PRIVATE);
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-            if(quitting){
-                oos.write(0);
-                oos.writeLong(0);
-                System.out.println("delete save");
-            }
-            else{
                 oos.write(exoP.getCurrentMediaItemIndex());
                 oos.writeLong(exoP.getCurrentPosition());
-                System.out.println("save");
-            }
 
-            oos.close();
-            fos.close();
-        } catch (IOException ignored) {
-            System.out.println("crashed in onStop");
+                oos.close();
+                fos.close();
+            } catch (IOException ignored) {
+                System.out.println("crashed in onStop");
+            }
         }
-        exoP.pause();
+        if (exoP != null) {
+            exoP.stop();          // Arrête la lecture
+            exoP.release();       // Libère les ressources
+            exoP = null;          // Remet la référence à null
+        }
 
     }
-
 
     @Override
     protected void onPause() {
         super.onPause();
-        System.out.println("pause");
-        if(!quitting){
+        if(!quitting){      //si je quitte pas, enregistre ou je suis
             song_index = exoP.getCurrentMediaItemIndex();
             song_position = exoP.getCurrentPosition();
         }

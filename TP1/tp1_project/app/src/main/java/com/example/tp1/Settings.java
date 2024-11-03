@@ -13,8 +13,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class Settings extends AppCompatActivity {
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,20 +25,14 @@ public class Settings extends AppCompatActivity {
         });
 
         Switch s = findViewById(R.id.switch1);
-
         Intent intent = getIntent();
         s.setChecked(intent.getBooleanExtra("replay", false));
 
-
-        ImageButton finish_btn = findViewById(R.id.finsh);
-        finish_btn.setOnClickListener(v -> {
-
+        findViewById(R.id.finsh).setOnClickListener(v -> {
             Intent resultIntent = new Intent();
-
-            resultIntent.putExtra("replay", s.isChecked()); // Mettre la donnée
+            resultIntent.putExtra("replay", s.isChecked()); // Mettre le replay true or false selon la switch
             setResult(RESULT_OK, resultIntent); // Indiquer que le résultat est OK et ajouter l'intent
             finish(); // Fermer l'activité
-
         });
 
     }

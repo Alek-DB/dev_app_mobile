@@ -26,15 +26,13 @@ public class Modele implements Sujet {
 
     public Modele(Context context) {    //va chercher la playlist
         RequestQueue rq = Volley.newRequestQueue( context);
-        String url = "https://api.jsonbin.io/v3/b/661ab8b1acd3cb34a837f284?meta=false";
+        String url = "https://api.npoint.io/d4c29479e010376e6847";
         StringRequest sr = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Gson gson = new Gson();
-                playlist = gson.fromJson(response, Playlist.class);
-
-                avertirObservateurs();
-
+                playlist = gson.fromJson(response, Playlist.class); //Prendre la playlist
+                avertirObservateurs();  //dire a l'observateur qu'il y a un changement
             }
         }, new Response.ErrorListener() {
             @Override
@@ -53,7 +51,7 @@ public class Modele implements Sujet {
     }
     @Override
     public void enleverObservateur(ObservateurChangement obs) {
-        obs = null;
+        this.obs = null;
     }
     @Override
     public void avertirObservateurs() {

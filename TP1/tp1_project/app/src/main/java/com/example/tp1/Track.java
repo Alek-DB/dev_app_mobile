@@ -2,7 +2,7 @@ package com.example.tp1;
 
 import java.io.Serializable;
 
-public class Track implements Serializable {
+public class Track implements Serializable {    //class pour chaque musique
     private String id;
     private String title;
     private String album;
@@ -25,9 +25,7 @@ public class Track implements Serializable {
         return title;
     }
 
-    public String getAlbum() {
-        return album;
-    }
+    public String getAlbum() {return album;}
 
     public String getArtist() {
         return artist;

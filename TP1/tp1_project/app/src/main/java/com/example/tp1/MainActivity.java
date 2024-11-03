@@ -30,11 +30,9 @@ import javax.xml.transform.Result;
 
 public class MainActivity extends AppCompatActivity implements ObservateurChangement {
 
-
-    private Playlist playlist;
+    private Playlist playlist;  // playlist qui contient une liste de toutes mes musiques
     private Sujet modele;
-
-    private Vector<Hashtable<String, Object>> vector = new Vector<>();
+    private Vector<Hashtable<String, Object>> vector = new Vector<>();  //pour l'adaptater
     private ListView liste;
     private ActivityResultLauncher<Intent> lanceur;
     private boolean replay = false;
@@ -51,12 +49,10 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         });
 
         lanceur = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new CallBackInfo());
-
-        ImageButton settings = findViewById(R.id.settings);
-        settings.setOnClickListener(v -> {
+        findViewById(R.id.settings).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(),Settings.class);
             intent.putExtra("replay", replay);
-            lanceur.launch(intent);
+            lanceur.launch(intent); // ouvre l'activité settings et reviens dans le callback
         });
     }
 
@@ -66,24 +62,23 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         super.onStart();            //créer le modele, donc va chercher la playlist
         modele = Modele.getInstance(this);
         modele.ajouterObservateur(this); // on ajouter l'observateur ( l'activité ) au modèle ( le sujet )
-        System.out.println("starting main");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        modele.enleverObservateur(this);
+        modele.enleverObservateur(this);    //on enleve l'observateur
     }
 
     @Override
-    public void changement(Playlist p) {
+    public void changement(Playlist p) {    //quand le sujet fini de prendre la playlist
 
         playlist = p;
 
         int song_index = 0;
         long song_position = 0;
 
-        //voir si j'ai sauvegarder qqpart
+        //voir si j'ai sauvegarder un index et une position
         try {
             FileInputStream fis = openFileInput("fichier.ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
@@ -94,19 +89,18 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             ois.close();
             fis.close();
         } catch (Exception ignored) {
-            ignored.printStackTrace();
+
         }
-        set_adaptater();
+        set_adaptater();    //on place les musiques dans l'adaptater
 
 
-        if(song_position != 0 || song_index !=0){   //si j'ai sauvegardé, va a la toune
+        if(song_position != 0 || song_index !=0){   //si j'ai sauvegardé, va a la musique
             go_to(song_index,song_position);
         }
 
     }
 
-    private void go_to(int index, long position){
-
+    private void go_to(int index, long position){   //utilisé pour aller dans song activity avec un index et une position
         Intent intent = new Intent(getApplicationContext(),songActivity.class);
         intent.putExtra("index", index);
         intent.putExtra("time", position);
@@ -116,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
     }
 
     public class CallBackInfo implements ActivityResultCallback<ActivityResult> {
-        // appelé quand je reviens  dans cette activité, retour du boomerang
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == RESULT_OK) {
@@ -138,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
             temp.put("image", m.getImage());
             vector.add(temp);
         }
-
+        //création de l'adaptater
         SimpleAdapter adapter = new SimpleAdapter(this, vector, R.layout.un_item, new String[]{"artist", "title", "album", "image"}, new int[]{R.id.artist, R.id.nom, R.id.album, R.id.imageView2}){
             @Override
             public void setViewImage(ImageView v, String value) {
@@ -150,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements ObservateurChange
         liste.setDivider(null);
         liste.setDividerHeight(0);
         liste.setOnItemClickListener((parent, view, position, id) -> {
-            go_to(position,0);
+            go_to(position,0);  //chaque item du listview va vers sa musique avec sa position
         });
     }
 }
