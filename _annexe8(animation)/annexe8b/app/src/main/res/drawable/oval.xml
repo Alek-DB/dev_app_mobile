@@ -1,0 +1,9 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF4500" /> <!-- Orange red couleur -->
+    <gradient
+        android:startColor="#FFA500"
+    android:endColor="#FF0000"
+    android:angle="45"
+    android:type="linear" />
+    <corners android:radius="1000dp" /> <!-- Arrondir les coins pour former un ovale -->
+</shape>
