@@ -1,0 +1,84 @@
+{
+  "cars": [
+    {
+      "name": "Toyota Corolla",
+      "price": 21900
+    },
+    {
+      "name": "Honda Civic",
+      "price": 23900
+    },
+    {
+      "name": "Ford F-150",
+      "price": 39900
+    },
+    {
+      "name": "Chevrolet Silverado 1500",
+      "price": 42900
+    },
+    {
+      "name": "Tesla Model 3",
+      "price": 44999
+    },
+    {
+      "name": "BMW 3 Series",
+      "price": 43900
+    },
+    {
+      "name": "Audi A4",
+      "price": 43950
+    },
+    {
+      "name": "Nissan Altima",
+      "price": 26900
+    },
+    {
+      "name": "Mazda 3",
+      "price": 24900
+    },
+    {
+      "name": "Volkswagen Golf",
+      "price": 26900
+    },
+    {
+      "name": "Hyundai Elantra",
+      "price": 23900
+    },
+    {
+      "name": "Subaru Outback",
+      "price": 33900
+    },
+    {
+      "name": "Kia Sorento",
+      "price": 39900
+    },
+    {
+      "name": "Jeep Grand Cherokee",
+      "price": 46900
+    },
+    {
+      "name": "Chrysler Pacifica",
+      "price": 46900
+    },
+    {
+      "name": "Mercedes-Benz C-Class",
+      "price": 49900
+    },
+    {
+      "name": "Volvo XC90",
+      "price": 60900
+    },
+    {
+      "name": "Porsche Macan",
+      "price": 65900
+    },
+    {
+      "name": "Lexus RX 350",
+      "price": 56900
+    },
+    {
+      "name": "Jaguar F-Pace",
+      "price": 66900
+    }
+  ]
+}
